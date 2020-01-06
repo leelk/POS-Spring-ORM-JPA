@@ -5,12 +5,13 @@ import lk.ijse.dep.pos.dao.custom.OrderDetailDAO;
 import lk.ijse.dep.pos.entity.OrderDetail;
 import lk.ijse.dep.pos.entity.OrderDetailPK;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@Repository
 public class OrderDetailDAOImpl extends CrudDAOImpl<OrderDetail,OrderDetailPK> implements OrderDetailDAO {
 
 

@@ -3,20 +3,18 @@ package lk.ijse.dep.pos.dao;
 import lk.ijse.dep.pos.entity.SuperEntity;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
 public abstract class CrudDAOImpl<T extends SuperEntity,ID extends Serializable> implements CrudDAO<T, ID> {
 
+    @PersistenceContext
     protected EntityManager entityManager;
     private Class<T> entity;
 
 
-    @Override
-    public void setEntityManager(EntityManager entityManager) {
-        this.entityManager= entityManager;
-    }
 
 
     public CrudDAOImpl() {
