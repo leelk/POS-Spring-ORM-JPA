@@ -26,6 +26,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import lk.ijse.dep.crypto.DEPCrypt;
+import lk.ijse.dep.pos.AppInitializer;
+import org.springframework.core.env.Environment;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,7 +63,32 @@ public class MainFormController implements Initializable {
     /**
      * Initializes the lk.ijse.dep.pos.controller class.
      */
+
+    private Environment env;
+
+    private String getUserName(){
+        return DEPCrypt.decode(env.getRequiredProperty("javax.persistence.jdbc.user"),"dep4");
+    }
+
+    private String getPassword(){
+        return DEPCrypt.decode(env.getRequiredProperty("javax.persistence.jdbc.password"),"dep4");
+    }
+
+    private String getHost() {
+        return env.getRequiredProperty("ijse.dep.ip");
+    }
+
+    private String getPort() {
+        return env.getRequiredProperty("ijse.dep.port");
+    }
+
+    private String getDatabase() {
+        return env.getRequiredProperty("ijse.dep.db");
+    }
+
+
     public void initialize(URL url, ResourceBundle rb) {
+        env = AppInitializer.ctx.getBean(Environment.class);
         FadeTransition fadeIn = new FadeTransition(Duration.millis(2000), root);
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
@@ -162,8 +190,8 @@ public class MainFormController implements Initializable {
         }
     }
 
-    public void btnRestore_OnAction(ActionEvent actionEvent) {/*
-        FileChooser fileChooser = new FileChooser();
+    public void btnRestore_OnAction(ActionEvent actionEvent) {
+      FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Let's restore the backup");
         fileChooser.getExtensionFilters().
                 add(new FileChooser.ExtensionFilter("SQL File", "*.sql"));
@@ -171,12 +199,12 @@ public class MainFormController implements Initializable {
         if (file != null) {
 
             String[] commands;
-            if (DBConnection.password.length() > 0) {
-                commands = new String[]{"mysql", "-h", DBConnection.host, "-u", DBConnection.username,
-                        "-p" + DBConnection.password, "--port", DBConnection.port, DBConnection.db, "-e", "source " + file.getAbsolutePath()};
-            } else {
-                commands = new String[]{"mysql", "-h", DBConnection.host, "-u", DBConnection.username, "--port", DBConnection.port,
-                        DBConnection.db, "-e", "source " + file.getAbsolutePath()};
+            if (getPassword().length() > 0){
+                commands = new String[]{"mysql", "-h", getHost(), "-u", getUserName(),
+                        "-p" + getPassword(),"--port",getPort(), getDatabase(), "-e", "source " + file.getAbsolutePath()};
+            }else{
+                commands = new String[]{"mysql", "-h", getHost(), "-u", getUserName(),"--port",getPort(),
+                         getDatabase(), "-e", "source " + file.getAbsolutePath()};
             }
 
             // Long running task == Restore
@@ -208,14 +236,14 @@ public class MainFormController implements Initializable {
                 this.pgb.setVisible(false);
                 this.root.getScene().setCursor(Cursor.DEFAULT);
                 new Alert(Alert.AlertType.ERROR, "Failed to restore the backup. Contact DEPPO").show();
-            });
+            } );
 
             new Thread(task).start();
-        }*/
+        }
 
     }
 
-    public void btnBackup_OnAction(ActionEvent actionEvent) {/*
+    public void btnBackup_OnAction(ActionEvent actionEvent) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save the DB Backup");
         fileChooser.getExtensionFilters().
@@ -233,12 +261,12 @@ public class MainFormController implements Initializable {
                 protected Void call() throws Exception {
 
                     String[] commands;
-                    if (DBConnection.password.length() > 0) {
-                        commands = new String[]{"mysqldump", "-h", DBConnection.host, "-u", DBConnection.username,
-                                "-p" + DBConnection.password, "--port", DBConnection.port, DBConnection.db, "--result-file", file.getAbsolutePath() + ((file.getAbsolutePath().endsWith(".sql")) ? "" : ".sql")};
-                    } else {
-                        commands = new String[]{"mysqldump", "-h", DBConnection.host, "-u", DBConnection.username, "--port", DBConnection.port,
-                                DBConnection.db, "--result-file", file.getAbsolutePath() + ((file.getAbsolutePath().endsWith(".sql")) ? "" : ".sql")};
+                    if (getPassword().length() > 0){
+                        commands = new String[]{"mysqldump", "-h", getHost(), "-u", getUserName(),
+                                "-p" + getPassword(),"--port",getPort(), getDatabase(), "--result-file", file.getAbsolutePath() + ((file.getAbsolutePath().endsWith(".sql")) ? "" : ".sql")};
+                    }else{
+                        commands = new String[]{"mysqldump", "-h", getHost(), "-u", getUserName(), "--port",getPort(),
+                                getDatabase(), "--result-file", file.getAbsolutePath() + ((file.getAbsolutePath().endsWith(".sql")) ? "" : ".sql")};
                     }
 
                     Process process = Runtime.getRuntime().exec(commands);
@@ -257,16 +285,16 @@ public class MainFormController implements Initializable {
             task.setOnSucceeded(event -> {
                 this.pgb.setVisible(false);
                 this.root.getScene().setCursor(Cursor.DEFAULT);
-                new Alert(Alert.AlertType.INFORMATION, "Backup process has been done successfully").show();
+                new Alert(Alert.AlertType.INFORMATION,"Backup process has been done successfully").show();
             });
 
             task.setOnFailed(event -> {
                 this.pgb.setVisible(false);
                 this.root.getScene().setCursor(Cursor.DEFAULT);
-                new Alert(Alert.AlertType.ERROR, "Failed to back up. Contact DEEPO").show();
+                new Alert(Alert.AlertType.ERROR,"Failed to back up. Contact DEEPO").show();
             });
 
             new Thread(task).start();
-        }*/
+        }
     }
 }

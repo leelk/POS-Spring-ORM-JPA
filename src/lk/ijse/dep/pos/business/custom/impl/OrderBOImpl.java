@@ -1,23 +1,23 @@
 package lk.ijse.dep.pos.business.custom.impl;
 
 import lk.ijse.dep.pos.business.custom.OrderBO;
-import lk.ijse.dep.pos.dao.custom.ItemDAO;
-import lk.ijse.dep.pos.dao.custom.OrderDAO;
-import lk.ijse.dep.pos.dao.custom.OrderDetailDAO;
-import lk.ijse.dep.pos.dao.custom.QueryDAO;
-import lk.ijse.dep.pos.db.JPAUtil;
+import lk.ijse.dep.pos.dao.custom.*;
 import lk.ijse.dep.pos.dto.OrderDTO;
 import lk.ijse.dep.pos.dto.OrderDTO2;
 import lk.ijse.dep.pos.dto.OrderDetailDTO;
-import lk.ijse.dep.pos.entity.*;
+import lk.ijse.dep.pos.entity.CustomEntity;
+import lk.ijse.dep.pos.entity.Item;
+import lk.ijse.dep.pos.entity.Order;
+import lk.ijse.dep.pos.entity.OrderDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Transactional
 @Component
 public class OrderBOImpl implements OrderBO {
 
@@ -30,27 +30,23 @@ public class OrderBOImpl implements OrderBO {
     @Autowired
     private QueryDAO queryDAO;
 
+    @Autowired
+    private CustomerDAO customerDAO;
+
     @Override
     public int getLastOrderId() throws Exception {
-        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        orderDAO.setEntityManager(em);
-        em.getTransaction().begin();
+
         int lastOrderId = orderDAO.getLastOrderId();
-        em.getTransaction().commit();
-        em.close();
         return lastOrderId;
     }
 
     @Override
     public void placeOrder(OrderDTO order) throws Exception {
-        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        orderDAO.setEntityManager(em);
-        itemDAO.setEntityManager(em);
-        orderDetailDAO.setEntityManager(em);
-        em.getTransaction().begin();
+
+
         int oId = order.getId();
         orderDAO.save(new Order(oId, new java.sql.Date(new Date().getTime()),
-                em.getReference(Customer.class, order.getCustomerId())));
+                customerDAO.find(order.getCustomerId())));
         for (OrderDetailDTO orderDetail : order.getOrderDetails()) {
             orderDetailDAO.save(new OrderDetail(oId, orderDetail.getCode(),
                     orderDetail.getQty(), orderDetail.getUnitPrice()));
@@ -58,8 +54,7 @@ public class OrderBOImpl implements OrderBO {
             item.setQtyOnHand(item.getQtyOnHand() - orderDetail.getQty());
             itemDAO.update(item);
         }
-        em.getTransaction().commit();
-        em.close();
+
     }
 
     @Override
@@ -69,13 +64,9 @@ public class OrderBOImpl implements OrderBO {
 
     @Override
     public List<OrderDTO2> getOrderInfo2(String query) throws Exception {
-        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        queryDAO.setEntityManager(em);
-        em.getTransaction().begin();
+
 
         List<CustomEntity> ordersInfo = queryDAO.getOrdersInfo(query + "%");
-        em.getTransaction().commit();
-        em.close();
 
         List<OrderDTO2> dtos = new ArrayList<>();
         for (CustomEntity info : ordersInfo) {
@@ -84,6 +75,5 @@ public class OrderBOImpl implements OrderBO {
         }
         return dtos;
     }
-
 
 }

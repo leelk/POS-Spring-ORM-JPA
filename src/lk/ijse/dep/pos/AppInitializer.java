@@ -6,7 +6,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
-import lk.ijse.dep.pos.db.JPAUtil;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.net.URL;
@@ -24,7 +23,6 @@ public class AppInitializer extends Application {
         launch(args);
 
         System.out.println("Shutting down the connection");
-        JPAUtil.getEntityManagerFactory().close();
 
     }
 
