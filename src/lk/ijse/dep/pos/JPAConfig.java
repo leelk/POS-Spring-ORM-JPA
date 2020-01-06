@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 @Configuration
 @PropertySource("file:${user.dir}/resources/application.properties")
 public class JPAConfig {
+
     @Autowired
     private Environment env;
 
